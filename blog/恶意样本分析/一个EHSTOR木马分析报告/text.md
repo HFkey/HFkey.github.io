@@ -7,9 +7,9 @@
     SHA1:7e77b925973755da363ad876c31d3552e91ed725
     SHA256:ac38403a3188bfe31850a3710cdd1311abe9f7bdaa0e23add7eda6196
 
-## 1.行为分析
-
-## 2.逆向调试
+## 1.概述
+该样本为一个窃密远控木马，会创建EhStorAuthn.exe进程注入执行恶意代码。对语言1俄语，乌克兰，白俄罗斯语，亚美尼亚语，哈萨克语，罗马尼亚语 - 摩尔多瓦，俄语 - 摩尔多瓦设置白名单，推测作者应该是其中地区。相关域名main21.site、main21.space、main21.xyz。
+## 2.详细分析
 休眠5秒后，尝试创建does_not_exist.exe程序，创建成功即退出。不成功继续执行。  
 ![尝试创建标识程序](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/1.png)
 ### 动态解密
@@ -42,7 +42,7 @@ sub_404BEC函数通过检测"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%\wall
 ![生成文件名](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/9.png)
 
 一系列字符串解码拼接后，创建文件夹"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%"并设置隐藏属性，  
-复制ntdll.dll到"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%\wallpaper.mp4"
+复制ntdll.dll到"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%\wallpaper.mp4"，  
 复制自身到开机自启动目录，文件名为之前生成的5位数字
 ![释放文件](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/10.png)
 
@@ -67,6 +67,8 @@ sub_404BEC函数通过检测"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%\wall
 ![计划任务](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/18.png)
 
 ### 窃密远控
+在功能函数执行过程中，使用RtlSetProcessIsCritical函数设置为系统关键进程，强制退出会导致蓝屏。  
+
 获取本机和用户信息，先用自身算法加密，再通过base64编码，作为transfer值，发送给main21.space，备用域名main21.site和main21.xyz
 ![窃密](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/19.png)
 
@@ -90,3 +92,21 @@ sub_404BEC函数通过检测"C:\Users\%USERNAME%\AppData\Local\z_%USERNAME%\wall
 ![执行或注册](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/25.png)
 
 #### "de:loadmemory"
+用http请求GET获得代码，再创建新的EhStorAuthn.exe进程再注入。
+![主体](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/26.png)
+![GET请求](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/27.png)
+![新进程注入](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/28.png)
+
+#### "update"
+下载并执行update.exe,并卸载老文件本体。
+![更新](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/29.png)
+
+#### "uninstall"
+使用SHFileOperationW函数删除文件。本体和全部生成文件以及注册表项被删除。  
+删除"C:\Users\User\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"目录下，随机5为数字命名的exe本体。  
+删除%USERNAME%.vbs开机自启动注册表项。  
+删除%USERNAME%.vbs的计划任务。  
+删除z_%USERNAME%文件夹。  
+![卸载](/blog/恶意样本分析/一个EHSTOR木马分析报告/pic/30.png)
+
+## 3.总结
