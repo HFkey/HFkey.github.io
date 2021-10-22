@@ -73,3 +73,10 @@ typedef struct _FLOATING_SAVE_AREA {
 } FLOATING_SAVE_AREA;
 ```
 经计算EIP在结构体偏移量就是0xb8，那么我们只要在这个地址下断点就好了。
+## 4.BlockInput
+```c
+BOOL BlockInput(
+  [in] BOOL fBlockIt
+);
+```
+BlockInput函数阻塞键盘及鼠标事件到达应用程序。该参数指明函数的目的。如果参数为TRUE，则鼠标和键盘事件将被阻塞。如果参数为FALSE， 则鼠标和键盘事件不被阻塞。
